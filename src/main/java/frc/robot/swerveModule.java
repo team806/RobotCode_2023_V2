@@ -7,24 +7,27 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 
 public class swerveModule extends Robot {
 
+    
     motor driveMotor;
     motor steerMotor;
     CANCoder moduleEncoder;
     double steerToWheelRatio = (1/6.75);
     double driveToWheelRatio = (7/150) * (17/27) * (45/15);
     double WheelRadiusFt = 1 / 3;
-
-    /**
-     * @param drive
-     * @param steer
-     * @param encoder
-     */
+ 
+    
+     
     public swerveModule(motor steer,motor drive,CANCoder encoder){
       driveMotor = drive;
       steerMotor = steer;
       moduleEncoder = encoder;
     }
+    
+    public swerveModule(){
 
+      }
+  
+   
     void setModule(SwerveModuleState targetState){
         steerMotor.set(pid.calculate(moduleEncoder.getAbsolutePosition(), targetState.angle.getDegrees()));
         driveMotor.set((targetState.speedMetersPerSecond) + (0.36 * steerMotor.get()));
@@ -37,4 +40,5 @@ public class swerveModule extends Robot {
             new Rotation2d(Math.toDegrees(moduleEncoder.getAbsolutePosition()))
         );
     } 
+    
 }
