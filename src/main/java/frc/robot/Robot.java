@@ -81,16 +81,11 @@ public class Robot extends TimedRobot {
     IMU.setYawAxis(IMUAxis.kZ);
     
     //modules
-    //swerveModule FR_module = new swerveModule();
-    //swerveModule FL_module = new swerveModule();
-    //swerveModule RR_module = new swerveModule();
-    //swerveModule RL_module = new swerveModule();
-    /*
-    new motor(new WPI_TalonFX(3)),new motor(new WPI_TalonFX(2)),new CANCoder(9))
-    new motor(new WPI_TalonFX(8)),new motor(new WPI_TalonFX(4)),new CANCoder(11)
-    new motor(new WPI_TalonFX(1)),new motor(new WPI_TalonFX(6)),new CANCoder(10)
-    new motor(new WPI_TalonFX(5)),new motor(new WPI_TalonFX(7)),new CANCoder(12)
-    */
+    swerveModule FR_module = new swerveModule(new motor(new WPI_TalonFX(3)),new motor(new WPI_TalonFX(2)),new CANCoder(9));
+    swerveModule FL_module = new swerveModule(new motor(new WPI_TalonFX(8)),new motor(new WPI_TalonFX(4)),new CANCoder(11));
+    swerveModule RR_module = new swerveModule(new motor(new WPI_TalonFX(1)),new motor(new WPI_TalonFX(6)),new CANCoder(10));
+    swerveModule RL_module = new swerveModule(new motor(new WPI_TalonFX(5)),new motor(new WPI_TalonFX(7)),new CANCoder(12));
+    
 
     m_kinematics = new SwerveDriveKinematics(
       new Translation2d(0.3175,0.3175),
