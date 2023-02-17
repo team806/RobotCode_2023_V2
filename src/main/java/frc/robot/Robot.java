@@ -37,7 +37,7 @@ public class Robot extends TimedRobot {
   // controller
   private final XboxController controller = new XboxController(0);
   // gyro
-  public static final ADIS16470_IMU IMU = new ADIS16470_IMU();
+  //public static final ADIS16470_IMU IMU = new ADIS16470_IMU();
   // PIDs
   PIDController pid = new PIDController(0.02, 0, 0);
   PIDController ballancePID = new PIDController(0.02, 0, 0);
@@ -77,8 +77,8 @@ public class Robot extends TimedRobot {
     RL_coder.configSensorDirection(true);
     RL_coder.configMagnetOffset(-28);
     */
-    IMU.calibrate();
-    IMU.setYawAxis(IMUAxis.kZ);
+    //IMU.calibrate();
+    //IMU.setYawAxis(IMUAxis.kZ);
     
     //modules
     swerveModule FR_module = new swerveModule(new motor(new WPI_TalonFX(3)),new motor(new WPI_TalonFX(2)),new CANCoder(9));
