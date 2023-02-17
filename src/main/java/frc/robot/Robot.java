@@ -45,8 +45,8 @@ public class Robot extends TimedRobot {
   PIDController driveYPID = new PIDController(0.02, 0, 0);
   PIDController driveAngPID = new PIDController(0.02, 0, 0);
 
-  Compressor compressor = new Compressor(1, PneumaticsModuleType.CTREPCM); 
-  DoubleSolenoid exampleDoublePCM = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 1, 0);
+  //Compressor compressor = new Compressor(1, PneumaticsModuleType.CTREPCM); 
+  //DoubleSolenoid exampleDoublePCM = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 1, 0);
 
 
   SwerveDriveKinematics m_kinematics;
@@ -60,7 +60,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("Auto choices", m_chooser);
 
     
-    compressor.enableAnalog(kDefaultPeriod, kDefaultPeriod);
+    //compressor.enableAnalog(kDefaultPeriod, kDefaultPeriod);
 
     pid.enableContinuousInput(90, 100);
     /*
@@ -193,12 +193,12 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("RL module speed", moduleStates[3].speedMetersPerSecond);
 
 
-    if (controller.getAButtonPressed()) {
+    /*if (controller.getAButtonPressed()) {
       exampleDoublePCM.set(Value.kForward);
     }else{
       exampleDoublePCM.set(Value.kReverse);
     }
-
+*/
   }
   private ChassisSpeeds getSetVelocity(XboxController controller) {
     double x = controller.getLeftX();
