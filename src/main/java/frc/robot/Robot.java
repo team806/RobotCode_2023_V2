@@ -7,8 +7,6 @@ package frc.robot;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.sensors.AbsoluteSensorRange;
 import com.ctre.phoenix.sensors.CANCoder;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -16,19 +14,13 @@ import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-/**
- * The VM is configured to automatically run this class, and to call the
- * functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the
- * name of this class or
- * the package after creating this project, you must also update the
- * build.gradle file in the
- * project.
- */
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
+
 public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
@@ -52,11 +44,10 @@ public class Robot extends TimedRobot {
   private final WPI_TalonFX motor_RLmag = new WPI_TalonFX(7);
 
   //sparks
-  private final CANSparkMax motor_FRang = new CANSparkMax(3,MotorType.kBrushless );
+  private final CANSparkMax motor_FRang = new CANSparkMax(3, MotorType.kBrushless );
   private final CANSparkMax motor_FLang = new CANSparkMax(8, MotorType.kBrushless);
   private final CANSparkMax motor_RRang = new CANSparkMax(1, MotorType.kBrushless);
   private final CANSparkMax motor_RLang = new CANSparkMax(5, MotorType.kBrushless);
-
 
   // CANCoders
   CANCoder FR_coder = new CANCoder(9);
@@ -78,30 +69,13 @@ public class Robot extends TimedRobot {
   // motor speed maximums
   protected double angSpeedMax = 0.3;
   protected double magSpeedMax = 1 - (angSpeedMax * -swerveRatio);
-  // x,y position of the robot in feet and degrees
-  double robotX = 0;
-  double robotY = 0;
-  double gyroYaw;
-  // clockwise gyro yaw
-  double CWgyroYaw;
-  // velocity of robot in feet per 20ms
-  double velocityX;
-  double velocityY;
   //
-  boolean onChargeStation;
+  double gyroYaw;
+  double CWgyroYaw;
   // modifiers for controller inputs (not for drive or module drive methods)
   double controllerMagMax = 0.8;
   double controllerMagPow = 3;
-  // target 2D pose values for
-  double targetRobotAng;
-  double targetRobotY;
-  double targetRobotX;
 
-  /**
-   * This function is run when the robot is first started up and should be used
-   * for any
-   * initialization code.
-   */
   @Override
   public void robotInit() {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
@@ -111,16 +85,16 @@ public class Robot extends TimedRobot {
     pid.enableContinuousInput(0, 360);
     FR_coder.configAbsoluteSensorRange(AbsoluteSensorRange.Unsigned_0_to_360);
     FR_coder.configSensorDirection(true);
-    FR_coder.configMagnetOffset(102);
+    FR_coder.configMagnetOffset(102+90);
     FL_coder.configAbsoluteSensorRange(AbsoluteSensorRange.Unsigned_0_to_360);
     FL_coder.configSensorDirection(true);
-    FL_coder.configMagnetOffset(0);
+    FL_coder.configMagnetOffset(0+90);
     RR_coder.configAbsoluteSensorRange(AbsoluteSensorRange.Unsigned_0_to_360);
     RR_coder.configSensorDirection(true);
-    RR_coder.configMagnetOffset(-70);
+    RR_coder.configMagnetOffset(-70+90);
     RL_coder.configAbsoluteSensorRange(AbsoluteSensorRange.Unsigned_0_to_360);
     RL_coder.configSensorDirection(true);
-    RL_coder.configMagnetOffset(-28);
+    RL_coder.configMagnetOffset(-28+90);
     IMU.calibrate();
     IMU.setYawAxis(IMUAxis.kZ);
 
@@ -130,17 +104,6 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("controller Mag Max", controllerMagMax);
   }
 
-  /**
-   * This function is called every robot packet, no matter the mode. Use this for
-   * items like
-   * diagnostics that you want ran during disabled, autonomous, teleoperated and
-   * test.
-   *
-   * <p>
-   * This runs after the mode specific periodic functions, but before LiveWindow
-   * and
-   * SmartDashboard integrated updating.
-   */
   @Override
   public void robotPeriodic() {
     // CCW = positive, centered to NORTH
@@ -153,27 +116,11 @@ public class Robot extends TimedRobot {
     RR_coderPosition = RR_coder.getAbsolutePosition();
     RL_coderPosition = RL_coder.getAbsolutePosition();
     /*
-     * double velocityX = ((wheelSpeed(motor_FRmag) * Math.cos(CWgyroYaw +
-     * FR_coderPosition)) +
-     * (wheelSpeed(motor_FLmag) * Math.cos(CWgyroYaw + FL_coderPosition)) +
-     * (wheelSpeed(motor_RRmag) * Math.cos(CWgyroYaw + RR_coderPosition)) +
-     * (wheelSpeed(motor_RLmag) * Math.cos(CWgyroYaw + RL_coderPosition))) / 4;
-     * double velocityY = ((wheelSpeed(motor_FRmag) * Math.sin(CWgyroYaw +
-     * FR_coderPosition)) +
-     * (wheelSpeed(motor_FLmag) * Math.sin(CWgyroYaw + FL_coderPosition)) +
-     * (wheelSpeed(motor_RRmag) * Math.sin(CWgyroYaw + RR_coderPosition)) +
-     * (wheelSpeed(motor_RLmag) * Math.sin(CWgyroYaw + RL_coderPosition))) / 4;
-     * 
-     * robotX += velocityX;
-     * robotY += velocityY;
-     * 
      * SmartDashboard.putNumber("X velocity", velocityX);
      * SmartDashboard.putNumber("Y velocity", velocityY);
      * SmartDashboard.putNumber("X", robotX);
      * SmartDashboard.putNumber("Y", robotY);
      * SmartDashboard.putNumber("Yaw", gyroYaw);
-     */
-    /*
      * SmartDashboard.putNumber("FR codeer ang", FR_coderPosition);
      * SmartDashboard.putNumber("FL codeer ang", FL_coderPosition);
      * SmartDashboard.putNumber("RR codeer ang", RR_coderPosition);
@@ -190,23 +137,6 @@ public class Robot extends TimedRobot {
      */
   }
 
-  /**
-   * This autonomous (along with the chooser code above) shows how to select
-   * between different
-   * autonomous modes using the dashboard. The sendable chooser code works with
-   * the Java
-   * SmartDashboard. If you prefer the LabVIEW Dashboard, remove all of the
-   * chooser code and
-   * uncomment the getString line to get the auto name from the text box below the
-   * Gyro
-   *
-   * <p>
-   * You can add additional auto modes by adding additional comparisons to the
-   * switch structure
-   * below with additional strings. If using the SendableChooser make sure to add
-   * them to the
-   * chooser code above as well.
-   */
   @Override
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
@@ -215,7 +145,6 @@ public class Robot extends TimedRobot {
 
   }
 
-  /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
     switch (m_autoSelected) {
@@ -229,22 +158,16 @@ public class Robot extends TimedRobot {
     }
   }
 
-  /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
 
   }
 
-  /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    controllerMagMax = SmartDashboard.getNumber("controller Mag Max", controllerMagMax);
 
     drive(controller.getLeftX(),controller.getLeftY(),Math.pow(controller.getRightX(),controllerMagPow));
-
-    if (controller.getAButtonPressed()) {
-      IMU.reset();
-    }
+    if (controller.getAButtonPressed()) {IMU.reset();}
   }
 
   /**
@@ -256,7 +179,7 @@ public class Robot extends TimedRobot {
    *          respectivly
    */
   private void drive(double x, double y, double z) {
-    double controlerAng = Math.atan2(y, x) + Math.toRadians(gyroYaw + 90);// rotate by gyro for field
+    double controlerAng = Math.atan2(y, x) + Math.toRadians(gyroYaw - 90);// rotate by gyro for field
     double controlermag = Math.pow(MathUtil.clamp(Math.hypot(x, y), -1, 1), controllerMagPow) * controllerMagMax;
     x = Math.cos(controlerAng) * controlermag;
     y = Math.sin(controlerAng) * controlermag;
@@ -265,15 +188,12 @@ public class Robot extends TimedRobot {
     moduleDrive(motor_FLang, motor_FLmag, FL_coderPosition, x + (z * 0.707106), y + (z * 0.707106));
     moduleDrive(motor_RRang, motor_RRmag, RR_coderPosition, x + (z * -0.707106), y + (z * -0.707106));
     moduleDrive(motor_RLang, motor_RLmag, RL_coderPosition, x + (z * 0.707106), y + (z * -0.707106));
-
-    SmartDashboard.putNumber("final x", x);
-    SmartDashboard.putNumber("final y", y);
   }
 
   /**
    * @return Drive a swerve module acording to an x and y value. NOT field
    *         oriended
-   * @param motor_FRang2   the steering motor of the respective module
+   * @param angMotor   the steering motor of the respective module
    * @param magMotor   the steering motor of the respective module
    * @param encoderAng the encoder ang of the respective module
    * @param x          one to negitive one value for driving left or right
@@ -281,46 +201,28 @@ public class Robot extends TimedRobot {
    * @param y          one to negitive one value for driving back or forward
    *                   respectivly
    */
-  void moduleDrive(CANSparkMax motor_FRang2, WPI_TalonFX magMotor, double encoderAng, double x, double y) {
+  void moduleDrive(CANSparkMax angMotor, WPI_TalonFX magMotor, double encoderAng, double x, double y) {
     double targetAng = Math.toDegrees(Math.atan2(y, x));
     double targetMag = Math.hypot(y, x) / (1 + Math.hypot(0.707106, 0.707106));// scaled to range [-1,1]
-    double setang;
-    double setmag;
-
-    if (distance(encoderAng, targetAng) > 90) {
-      setang = targetAng + 180;
-      setmag = -targetMag;
-    } else {
-      setang = targetAng;
-      setmag = targetMag;
-    }
-
-    motor_FRang2.set(pid.calculate(encoderAng, setang) * angSpeedMax);
-    magMotor.set((setmag * magSpeedMax) + (swerveRatio * motor_FRang2.get()));
+    
+    angMotor.set(pid.calculate(encoderAng, targetAng) * angSpeedMax);
+    magMotor.set((targetMag * magSpeedMax) + (swerveRatio * angMotor.get()));
   }
 
-  public static double distance(double alpha, double beta) {
-    double phi = Math.abs(beta - alpha) % 360; // This is either the distance or 360 - distance
-    double distance = phi > 180 ? 360 - phi : phi;
-    return distance;
-  }
 
-  /** This function is called once when the robot is disabled. */
+
   @Override
   public void disabledInit() {
   }
 
-  /** This function is called periodically when disabled. */
   @Override
   public void disabledPeriodic() {
   }
 
-  /** This function is called once when test mode is enabled. */
   @Override
   public void testInit() {
   }
 
-  /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
     
